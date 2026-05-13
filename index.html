@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Cloud PC (Beta)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--bg-gradient:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg-gradient);min-height:100vh;color:#fff;overflow-x:hidden;transition:background 0.5s ease}
+.particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;width:4px;height:4px;background:rgba(255,255,255,0.3);border-radius:50%;animation:float 15s infinite}
+@keyframes float{0%,100%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) rotate(720deg);opacity:0}}
+.container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:20px}
+.header{text-align:center;padding:30px 0;animation:fadeInDown 1s ease}
+.header h1{font-size:2.5rem;background:linear-gradient(90deg,#00d4ff,#7b2cbf,#ff006e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 30px rgba(0,212,255,0.3);margin-bottom:10px}
+.header .subtitle{font-size:1.1rem;color:#a0a0a0;letter-spacing:1px}
+.header .flag{font-size:1.3rem}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+.role-selection{display:flex;justify-content:center;gap:30px;margin:40px 0;animation:fadeInUp 1s ease 0.3s both}
+.role-card{background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 50px;text-align:center;cursor:pointer;transition:all 0.4s ease;min-width:250px}
+.role-card:hover{transform:translateY(-10px);background:rgba(255,255,255,0.1);border-color:rgba(0,212,255,0.5);box-shadow:0 20px 40px rgba(0,212,255,0.2)}
+.role-card i{font-size:3rem;margin-bottom:15px;color:#00d4ff}
+.role-card h3{font-size:1.5rem;margin-bottom:10px}
+.role-card p{color:#888;font-size:0.9rem}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex;animation:fadeIn 0.3s ease}
+.login-box{background:linear-gradient(145deg,#1a1a2e,#16213e);border:1px solid rgba(0,212,255,0.3);border-radius:20px;padding:40px;width:90%;max-width:450px;box-shadow:0 25px 50px rgba(0,0,0,0.5);animation:slideUp 0.4s ease;max-height:90vh;overflow-y:auto}
+.login-box.wide{max-width:600px}
+.login-box h2{text-align:center;margin-bottom:30px;color:#00d4ff}
+.input-group{margin-bottom:18px}
+.input-group label{display:block;margin-bottom:6px;color:#aaa;font-size:0.9rem}
+.input-group label.required::after{content:' *';color:#ff006e}
+.input-group input,.input-group select{width:100%;padding:12px 15px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;font-size:1rem;transition:all 0.3s ease}
+.input-group input:focus,.input-group select:focus{outline:none;border-color:#00d4ff;box-shadow:0 0 15px rgba(0,212,255,0.3)}
+.input-group select option{background:#1a1a2e;color:#fff}
+.input-group input.error{border-color:#ff006e;box-shadow:0 0 10px rgba(255,0,110,0.3)}
+.btn{width:100%;padding:14px;background:linear-gradient(90deg,#00d4ff,#7b2cbf);border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:all 0.3s ease;margin-top:10px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,212,255,0.4)}
+.btn-close{background:transparent;border:1px solid rgba(255,255,255,0.2);margin-top:10px}
+.btn-close:hover{background:rgba(255,255,255,0.1)}
+.btn-success{background:linear-gradient(90deg,#00ff88,#00d4ff)}
+.btn-danger{background:linear-gradient(90deg,#ff006e,#ff4444)}
+.btn-warning{background:linear-gradient(90deg,#ffaa00,#ff7700)}
+.btn-sm{width:auto;padding:8px 18px;font-size:0.85rem;display:inline-flex;align-items:center;gap:6px}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap}
+@keyframes slideUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.dashboard{display:none;animation:fadeIn 0.5s ease}
+.dashboard.active{display:block}
+.dashboard-layout{display:flex;gap:20px;min-height:70vh}
+.sidebar{width:280px;background:rgba(255,255,255,0.03);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:25px;flex-shrink:0}
+.sidebar .user-info{text-align:center;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:20px}
+.sidebar .avatar-container{position:relative;width:80px;height:80px;margin:0 auto 12px;cursor:pointer}
+.sidebar .avatar-container img,.sidebar .avatar-container .avatar-placeholder{width:80px;height:80px;border-radius:50%;border:3px solid #00d4ff;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:2rem;background:linear-gradient(135deg,#00d4ff,#7b2cbf);transition:all 0.3s ease}
+.sidebar .avatar-container:hover img,.sidebar .avatar-container:hover .avatar-placeholder{border-color:#ff006e;transform:scale(1.05)}
+.sidebar .avatar-container .avatar-edit{position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;background:#00d4ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:#000;border:2px solid #1a1a2e;transition:all 0.3s ease}
+.sidebar .avatar-container:hover .avatar-edit{background:#ff006e;color:#fff}
+.sidebar .user-info h4{color:#00d4ff;margin-bottom:5px}
+.sidebar .user-info span{font-size:0.8rem;color:#888}
+.nav-menu{list-style:none}
+.nav-menu li{margin-bottom:6px}
+.nav-menu a{display:flex;align-items:center;gap:12px;padding:12px 15px;color:#aaa;text-decoration:none;border-radius:12px;transition:all 0.3s ease;cursor:pointer;font-size:0.95rem}
+.nav-menu a:hover,.nav-menu a.active{background:rgba(0,212,255,0.1);color:#00d4ff}
+.nav-menu a i{width:20px;text-align:center}
+.main-content{flex:1;background:rgba(255,255,255,0.03);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:30px;overflow-y:auto}
+.section-title{font-size:1.6rem;margin-bottom:25px;display:flex;align-items:center;gap:12px}
+.section-title i{color:#00d4ff}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:30px}
+.status-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:22px;transition:all 0.3s ease}
+.status-card:hover{transform:translateY(-5px);border-color:rgba(0,212,255,0.3)}
+.status-card .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:12px}
+.status-card .icon.blue{background:rgba(0,212,255,0.2);color:#00d4ff}
+.status-card .icon.green{background:rgba(0,255,136,0.2);color:#00ff88}
+.status-card .icon.orange{background:rgba(255,170,0,0.2);color:#ffaa00}
+.status-card .icon.red{background:rgba(255,0,110,0.2);color:#ff006e}
+.status-card .icon.purple{background:rgba(123,44,191,0.2);color:#b388ff}
+.status-card h4{font-size:0.85rem;color:#888;margin-bottom:6px}
+.status-card .value{font-size:1.6rem;font-weight:700}
+.lock-screen{display:none;text-align:center;padding:80px 20px}
+.lock-screen.active{display:block;animation:pulse 2s infinite}
+.lock-screen i{font-size:5rem;color:#ff006e;margin-bottom:25px}
+.lock-screen h2{font-size:1.8rem;margin-bottom:15px;color:#ff006e}
+.lock-screen p{color:#888;font-size:1.1rem;max-width:500px;margin:0 auto}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+.cloud-list{display:grid;gap:12px}
+.cloud-item{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:space-between;transition:all 0.3s ease}
+.cloud-item:hover{border-color:rgba(0,212,255,0.3);transform:translateX(5px)}
+.cloud-item .info{display:flex;align-items:center;gap:14px;flex:1}
+.cloud-item .info i{font-size:1.8rem;color:#00d4ff;flex-shrink:0}
+.cloud-item .info h4{margin-bottom:4px;font-size:1rem}
+.cloud-item .info span{font-size:0.8rem;color:#888}
+.cloud-item .status{padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:600}
+.status.online{background:rgba(0,255,136,0.2);color:#00ff88}
+.status.offline{background:rgba(255,0,110,0.2);color:#ff006e}
+.status.maintenance{background:rgba(255,170,0,0.2);color:#ffaa00}
+.status.stopped{background:rgba(128,128,128,0.2);color:#888}
+.setting-group{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:22px;margin-bottom:18px}
+.setting-group h3{margin-bottom:18px;color:#00d4ff;display:flex;align-items:center;gap:10px;font-size:1.1rem}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.setting-row:last-child{border-bottom:none}
+.setting-row label{color:#ccc;font-size:0.9rem}
+.toggle{position:relative;width:50px;height:26px;background:rgba(255,255,255,0.1);border-radius:13px;cursor:pointer;transition:all 0.3s ease;flex-shrink:0}
+.toggle.active{background:#00d4ff}
+.toggle::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:all 0.3s ease}
+.toggle.active::after{left:27px}
+.add-cloud-form{display:grid;gap:14px}
+.add-cloud-form input{width:100%;padding:12px 15px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;font-size:1rem}
+.add-cloud-form input:focus{outline:none;border-color:#00d4ff}
+.error-msg{color:#ff006e;font-size:0.8rem;margin-top:-8px;display:none}
+.error-msg.show{display:block}
+.specs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px}
+.spec-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:18px;text-align:center}
+.spec-card i{font-size:1.4rem;color:#00d4ff;margin-bottom:8px}
+.spec-card h5{font-size:0.8rem;color:#888;margin-bottom:4px}
+.spec-card p{font-size:1rem;font-weight:600}
+.footer{text-align:center;padding:30px 0;margin-top:40px;border-top:1px solid rgba(255,255,255,0.1);color:#666;font-size:0.9rem}
+.footer .powered{color:#00d4ff;font-weight:600}
+.footer .flag{font-size:1.2rem}
+.toast{position:fixed;bottom:30px;right:30px;background:rgba(0,212,255,0.9);color:#000;padding:15px 25px;border-radius:12px;font-weight:600;transform:translateX(150%);transition:all 0.4s ease;z-index:2000}
+.toast.show{transform:translateX(0)}
+.toast.error{background:rgba(255,0,110,0.9);color:#fff}
+
+/* AVATAR CROP */
+.avatar-crop-modal .login-box{max-width:500px;padding:30px}
+.avatar-preview-area{display:flex;flex-direction:column;align-items:center;gap:18px;margin-bottom:18px}
+.crop-container{position:relative;width:280px;height:280px;background:rgba(255,255,255,0.05);border:2px dashed rgba(0,212,255,0.3);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:all 0.3s ease}
+.crop-container:hover{border-color:#00d4ff;background:rgba(0,212,255,0.05)}
+.crop-container.has-image{border-style:solid;cursor:default}
+.crop-container img{max-width:100%;max-height:100%;object-fit:contain}
+.crop-container .upload-icon{font-size:2.5rem;color:#00d4ff;margin-bottom:8px}
+.crop-container .upload-text{color:#888;font-size:0.9rem}
+.crop-container .upload-hint{color:#555;font-size:0.7rem;margin-top:4px}
+.crop-controls{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.crop-controls button{padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem}
+.crop-controls button:hover{background:rgba(0,212,255,0.2);border-color:#00d4ff}
+.crop-controls button i{margin-right:4px}
+.crop-slider{display:flex;align-items:center;gap:8px;color:#aaa;font-size:0.8rem}
+.crop-slider input[type="range"]{width:100px;accent-color:#00d4ff}
+.avatar-result{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:15px}
+.avatar-result canvas{border-radius:50%;border:3px solid #00d4ff}
+
+/* COLOR PICKER */
+.color-picker-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}
+.color-option{width:100%;aspect-ratio:1;border-radius:12px;cursor:pointer;border:3px solid transparent;transition:all 0.3s ease;position:relative}
+.color-option:hover{transform:scale(1.1)}
+.color-option.selected{border-color:#fff;box-shadow:0 0 15px rgba(255,255,255,0.5)}
+.color-option.selected::after{content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1.1rem;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.bg-preview{width:100%;height:70px;border-radius:12px;margin-top:12px;border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:#888;font-size:0.85rem;transition:all 0.3s ease}
+
+/* USER ACTIONS */
+.user-actions{display:flex;gap:6px;align-items:center}
+.user-actions button{padding:5px 10px;border-radius:6px;border:none;cursor:pointer;font-size:0.75rem;transition:all 0.3s ease}
+.user-actions .btn-edit{background:rgba(0,212,255,0.2);color:#00d4ff}
+.user-actions .btn-edit:hover{background:rgba(0,212,255,0.4)}
+.user-actions .btn-delete{background:rgba(255,0,110,0.2);color:#ff006e}
+.user-actions .btn-delete:hover{background:rgba(255,0,110,0.4)}
+
+/* MEMBER AUTH */
+.member-auth-box{max-width:400px;margin:0 auto;padding:35px}
+.member-auth-tabs{display:flex;gap:8px;margin-bottom:22px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px}
+.member-auth-tab{flex:1;text-align:center;padding:10px;cursor:pointer;border-radius:10px;transition:all 0.3s ease;color:#888;font-size:0.95rem}
+.member-auth-tab.active{background:rgba(0,212,255,0.1);color:#00d4ff}
+.member-auth-tab:hover{color:#00d4ff}
+
+/* CLOUD MANAGE ACTIONS */
+.cloud-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cloud-actions button{padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-size:0.75rem;transition:all 0.3s ease;display:inline-flex;align-items:center;gap:4px}
+.cloud-actions .btn-start{background:rgba(0,255,136,0.15);color:#00ff88;border:1px solid rgba(0,255,136,0.3)}
+.cloud-actions .btn-start:hover{background:rgba(0,255,136,0.3)}
+.cloud-actions .btn-stop{background:rgba(255,170,0,0.15);color:#ffaa00;border:1px solid rgba(255,170,0,0.3)}
+.cloud-actions .btn-stop:hover{background:rgba(255,170,0,0.3)}
+.cloud-actions .btn-restart{background:rgba(0,212,255,0.15);color:#00d4ff;border:1px solid rgba(0,212,255,0.3)}
+.cloud-actions .btn-restart:hover{background:rgba(0,212,255,0.3)}
+.cloud-actions .btn-delete{background:rgba(255,0,110,0.15);color:#ff006e;border:1px solid rgba(255,0,110,0.3)}
+.cloud-actions .btn-delete:hover{background:rgba(255,0,110,0.3)}
+.cloud-actions .btn-info{background:rgba(123,44,191,0.15);color:#b388ff;border:1px solid rgba(123,44,191,0.3)}
+.cloud-actions .btn-info:hover{background:rgba(123,44,191,0.3)}
+
+/* CLOUD DETAIL MODAL */
+.cloud-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:15px}
+.cloud-detail-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px}
+.cloud-detail-item label{display:block;color:#888;font-size:0.75rem;margin-bottom:4px}
+.cloud-detail-item span{color:#fff;font-size:0.95rem;font-weight:500}
+.cloud-detail-item .copy-btn{float:right;background:none;border:none;color:#00d4ff;cursor:pointer;font-size:0.8rem}
+.cloud-detail-item .copy-btn:hover{color:#fff}
+
+/* PROGRESS BAR */
+.progress-bar{width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;margin-top:8px}
+.progress-bar .fill{height:100%;border-radius:4px;transition:width 0.5s ease}
+.progress-bar .fill.green{background:#00ff88}
+.progress-bar .fill.orange{background:#ffaa00}
+.progress-bar .fill.red{background:#ff006e}
+
+@media(max-width:768px){.dashboard-layout{flex-direction:column}.sidebar{width:100%}.role-selection{flex-direction:column;align-items:center}.header h1{font-size:1.6rem}.crop-container{width:220px;height:220px}.cloud-detail-grid{grid-template-columns:1fr}}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.05)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.3);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,255,0.5)}
+.hidden{display:none!important}
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<div class="container">
+<div class="header" id="mainHeader">
+<h1><i class="fas fa-cloud"></i> Dashboard Cloud PC (Beta)</h1>
+<p class="subtitle">Made by : Nguyễn Chí Dự <span class="flag">✨🇻🇳✨</span></p>
+</div>
+
+<!-- ROLE SELECTION -->
+<div class="role-selection" id="roleSelection">
+<div class="role-card" onclick="showLogin()">
+<i class="fas fa-shield-alt"></i>
+<h3>Admin</h3>
+<p>Quản lý hệ thống & cấu hình</p>
+</div>
+<div class="role-card" onclick="showMemberAuth()">
+<i class="fas fa-user"></i>
+<h3>Member</h3>
+<p>Truy cập Cloud PC</p>
+</div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div class="modal-overlay" id="loginModal">
+<div class="login-box">
+<h2><i class="fas fa-lock"></i> Đăng nhập Admin</h2>
+<div class="input-group">
+<label><i class="fas fa-user"></i> Tài khoản</label>
+<input type="text" id="username" placeholder="Nhập tài khoản...">
+</div>
+<div class="input-group">
+<label><i class="fas fa-key"></i> Mật khẩu</label>
+<input type="password" id="password" placeholder="Nhập mật khẩu...">
+</div>
+<button class="btn" onclick="login()">Đăng nhập</button>
+<button class="btn btn-close" onclick="closeLogin()">Hủy</button>
+</div>
+</div>
+
+<!-- MEMBER AUTH -->
+<div class="modal-overlay" id="memberAuthModal">
+<div class="login-box member-auth-box">
+<h2><i class="fas fa-users"></i> Member Portal</h2>
+<div class="member-auth-tabs">
+<div class="member-auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Đăng nhập</div>
+<div class="member-auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Đăng ký</div>
+</div>
+<div id="memberLoginForm">
+<div class="input-group">
+<label><i class="fas fa-envelope"></i> Email</label>
+<input type="email" id="memberLoginEmail" placeholder="email@example.com">
+</div>
+<div class="input-group">
+<label><i class="fas fa-key"></i> Mật khẩu</label>
+<input type="password" id="memberLoginPass" placeholder="Nhập mật khẩu...">
+</div>
+<button class="btn" onclick="memberLogin()">Đăng nhập</button>
+</div>
+<div id="memberRegisterForm" class="hidden">
+<div class="input-group">
+<label class="required">Họ tên</label>
+<input type="text" id="memberRegName" placeholder="Nhập họ tên...">
+</div>
+<div class="input-group">
+<label class="required">Email</label>
+<input type="email" id="memberRegEmail" placeholder="email@example.com">
+</div>
+<div class="input-group">
+<label class="required">Mật khẩu</label>
+<input type="password" id="memberRegPass" placeholder="Tối thiểu 6 ký tự...">
+</div>
+<div class="input-group">
+<label class="required">Xác nhận mật khẩu</label>
+<input type="password" id="memberRegPass2" placeholder="Nhập lại mật khẩu...">
+</div>
+<button class="btn btn-success" onclick="memberRegister()">Đăng ký</button>
+</div>
+<button class="btn btn-close" onclick="closeMemberAuth()">Hủy</button>
+</div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="dashboard" id="adminDashboard">
+<div class="dashboard-layout">
+<div class="sidebar">
+<div class="user-info">
+<div class="avatar-container" onclick="openAvatarCrop('admin')">
+<img id="adminAvatar" src="" alt="" style="display:none;">
+<div class="avatar-placeholder" id="adminAvatarPlaceholder"><i class="fas fa-user-shield"></i></div>
+<div class="avatar-edit"><i class="fas fa-camera"></i></div>
+</div>
+<h4 id="adminName">Admin</h4>
+<span>HRGBVN System</span>
+</div>
+<ul class="nav-menu">
+<li><a class="active" onclick="showAdminSection('overview')"><i class="fas fa-home"></i> Tổng quan</a></li>
+<li><a onclick="showAdminSection('clouds')"><i class="fas fa-desktop"></i> Cloud PC</a></li>
+<li><a onclick="showAdminSection('cloudManage')"><i class="fas fa-server"></i> Quản lý máy</a></li>
+<li><a onclick="showAdminSection('settings')"><i class="fas fa-cog"></i> Settings</a></li>
+<li><a onclick="showAdminSection('users')"><i class="fas fa-users"></i> Người dùng</a></li>
+<li><a onclick="showAdminSection('appearance')"><i class="fas fa-palette"></i> Giao diện</a></li>
+<li><a onclick="showAdminSection('logs')"><i class="fas fa-history"></i> Nhật ký</a></li>
+<li><a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+</ul>
+</div>
+<div class="main-content" id="adminContent">
+
+<!-- Overview -->
+<div id="adminOverview">
+<h2 class="section-title"><i class="fas fa-home"></i> Tổng quan hệ thống</h2>
+<div class="status-grid">
+<div class="status-card">
+<div class="icon blue"><i class="fas fa-desktop"></i></div>
+<h4>Tổng Cloud PC</h4>
+<div class="value" id="totalClouds">0</div>
+</div>
+<div class="status-card">
+<div class="icon green"><i class="fas fa-check-circle"></i></div>
+<h4>Đang chạy</h4>
+<div class="value" id="runningClouds">0</div>
+</div>
+<div class="status-card">
+<div class="icon orange"><i class="fas fa-pause-circle"></i></div>
+<h4>Đã tắt</h4>
+<div class="value" id="stoppedClouds">0</div>
+</div>
+<div class="status-card">
+<div class="icon purple"><i class="fas fa-users"></i></div>
+<h4>Người dùng</h4>
+<div class="value" id="totalUsers">0</div>
+</div>
+<div class="status-card">
+<div class="icon red"><i class="fas fa-lock"></i></div>
+<h4>Trạng thái Site</h4>
+<div class="value" id="siteStatus">Mở</div>
+</div>
+<div class="status-card">
+<div class="icon blue"><i class="fas fa-memory"></i></div>
+<h4>CPU trung bình</h4>
+<div class="value" id="avgCpu">0%</div>
+</div>
+</div>
+<div class="setting-group">
+<h3><i class="fas fa-bell"></i> Thông báo hệ thống</h3>
+<div id="adminNotifications">
+<div class="setting-row"><span>Chào mừng đến với Dashboard Cloud PC!</span><span style="color:#888;font-size:0.8rem;">Vừa xong</span></div>
+</div>
+</div>
+</div>
+
+<!-- Clouds List -->
+<div id="adminClouds" class="hidden">
+<h2 class="section-title"><i class="fas fa-desktop"></i> Danh sách Cloud PC</h2>
+<div class="btn-group" style="margin-bottom:20px;">
+<button class="btn btn-sm btn-success" onclick="showAddCloudModal()"><i class="fas fa-plus"></i> Thêm Cloud PC</button>
+<button class="btn btn-sm" onclick="startAllClouds()"><i class="fas fa-play"></i> Bật tất cả</button>
+<button class="btn btn-sm btn-warning" onclick="stopAllClouds()"><i class="fas fa-stop"></i> Tắt tất cả</button>
+</div>
+<div class="cloud-list" id="cloudList"></div>
+</div>
+
+<!-- Cloud Manage -->
+<div id="adminCloudManage" class="hidden">
+<h2 class="section-title"><i class="fas fa-server"></i> Quản lý máy Cloud PC</h2>
+<div class="setting-group">
+<h3><i class="fas fa-info-circle"></i> Hướng dẫn</h3>
+<p style="color:#888;font-size:0.9rem;line-height:1.6;">
+<i class="fas fa-play" style="color:#00ff88;"></i> <b>Bật máy</b> - Khởi động Cloud PC<br>
+<i class="fas fa-stop" style="color:#ffaa00;"></i> <b>Tắt máy</b> - Tắt Cloud PC an toàn<br>
+<i class="fas fa-sync" style="color:#00d4ff;"></i> <b>Khởi động lại</b> - Restart Cloud PC<br>
+<i class="fas fa-trash" style="color:#ff006e;"></i> <b>Xóa</b> - Xóa Cloud PC khỏi hệ thống<br>
+<i class="fas fa-eye" style="color:#b388ff;"></i> <b>Chi tiết</b> - Xem thông tin chi tiết
+</p>
+</div>
+<div class="cloud-list" id="cloudManageList"></div>
+</div>
+
+<!-- Settings -->
+<div id="adminSettings" class="hidden">
+<h2 class="section-title"><i class="fas fa-cog"></i> Settings Cloud PC</h2>
+<div class="setting-group">
+<h3><i class="fas fa-lock"></i> Khóa/Mở Website</h3>
+<div class="setting-row">
+<div><label>Trạng thái Website</label><p style="font-size:0.8rem;color:#888;margin-top:4px;">Khi khóa, người dùng sẽ thấy thông báo bảo trì</p></div>
+<div class="toggle" id="siteLockToggle" onclick="toggleSiteLock()"></div>
+</div>
+<div class="setting-row">
+<label>Thông báo khóa</label>
+<input type="text" id="lockMessage" value="🔐 Website tạm thời khóa do chưa có cloud vui lòng truy cập lại vào lúc khác!" style="width:55%;padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;" onchange="updateLockMessage(this.value)">
+</div>
+</div>
+<div class="setting-group">
+<h3><i class="fas fa-microchip"></i> Cấu hình yêu cầu</h3>
+<div class="specs-grid">
+<div class="spec-card"><i class="fas fa-microchip"></i><h5>CPU</h5><p>Intel Xeon / AMD EPYC</p></div>
+<div class="spec-card"><i class="fas fa-memory"></i><h5>RAM</h5><p>16GB - 64GB DDR4</p></div>
+<div class="spec-card"><i class="fas fa-hdd"></i><h5>Storage</h5><p>NVMe SSD 500GB+</p></div>
+<div class="spec-card"><i class="fas fa-network-wired"></i><h5>Network</h5><p>1Gbps Uplink</p></div>
+<div class="spec-card"><i class="fas fa-video"></i><h5>GPU</h5><p>NVIDIA Tesla / RTX</p></div>
+<div class="spec-card"><i class="fas fa-windows"></i><h5>OS</h5><p>Windows Server / Linux</p></div>
+</div>
+</div>
+<div class="setting-group">
+<h3><i class="fas fa-shield-alt"></i> Bảo mật</h3>
+<div class="setting-row"><label>Xác thực 2 lớp (2FA)</label><div class="toggle" onclick="this.classList.toggle('active')"></div></div>
+<div class="setting-row"><label>Ghi log đăng nhập</label><div class="toggle active" onclick="this.classList.toggle('active')"></div></div>
+<div class="setting-row"><label>Giới hạn IP truy cập</label><div class="toggle" onclick="this.classList.toggle('active')"></div></div>
+</div>
+</div>
+
+<!-- Users -->
+<div id="adminUsers" class="hidden">
+<h2 class="section-title"><i class="fas fa-users"></i> Quản lý người dùng</h2>
+<div class="btn-group" style="margin-bottom:20px;">
+<button class="btn btn-sm btn-success" onclick="showAddUserModal()"><i class="fas fa-user-plus"></i> Thêm người dùng</button>
+</div>
+<div class="cloud-list" id="userList"></div>
+</div>
+
+<!-- Appearance -->
+<div id="adminAppearance" class="hidden">
+<h2 class="section-title"><i class="fas fa-palette"></i> Tùy chỉnh giao diện</h2>
+<div class="setting-group">
+<h3><i class="fas fa-fill-drip"></i> Màu nền Dashboard</h3>
+<p style="color:#888;font-size:0.85rem;margin-bottom:10px;">Chọn màu gradient nền cho toàn bộ dashboard</p>
+<div class="color-picker-grid" id="bgColorGrid"></div>
+<div class="bg-preview" id="bgPreview">Xem trước màu nền</div>
+<button class="btn btn-sm" style="margin-top:12px;" onclick="applyBackground()"><i class="fas fa-check"></i> Áp dụng màu nền</button>
+</div>
+<div class="setting-group">
+<h3><i class="fas fa-magic"></i> Hiệu ứng</h3>
+<div class="setting-row"><label>Particles animation</label><div class="toggle active" id="particlesToggle" onclick="toggleParticles()"></div></div>
+<div class="setting-row"><label>Glassmorphism UI</label><div class="toggle active" id="glassToggle" onclick="toggleGlassmorphism()"></div></div>
+<div class="setting-row"><label>Animation hover</label><div class="toggle active" onclick="this.classList.toggle('active')"></div></div>
+</div>
+</div>
+
+<!-- Logs -->
+<div id="adminLogs" class="hidden">
+<h2 class="section-title"><i class="fas fa-history"></i> Nhật ký hệ thống</h2>
+<div class="setting-group">
+<div id="logsContainer">
+<div class="setting-row"><span><i class="fas fa-info-circle" style="color:#00d4ff;margin-right:8px;"></i> Hệ thống khởi động</span><span style="color:#888;font-size:0.8rem;">2026-05-12 20:00:00</span></div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MEMBER DASHBOARD -->
+<div class="dashboard" id="memberDashboard">
+<div class="dashboard-layout">
+<div class="sidebar">
+<div class="user-info">
+<div class="avatar-container" onclick="openAvatarCrop('member')">
+<img id="memberAvatar" src="" alt="" style="display:none;">
+<div class="avatar-placeholder" id="memberAvatarPlaceholder"><i class="fas fa-user"></i></div>
+<div class="avatar-edit"><i class="fas fa-camera"></i></div>
+</div>
+<h4 id="memberDisplayName">Member</h4>
+<span id="memberDisplayEmail">Khách</span>
+</div>
+<ul class="nav-menu">
+<li><a class="active" onclick="showMemberSection('home')"><i class="fas fa-home"></i> Trang chủ</a></li>
+<li><a onclick="showMemberSection('mycloud')"><i class="fas fa-desktop"></i> Cloud PC của tôi</a></li>
+<li><a onclick="showMemberSection('support')"><i class="fas fa-headset"></i> Hỗ trợ</a></li>
+<li><a onclick="memberLogout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+</ul>
+</div>
+<div class="main-content" id="memberContent">
+
+<!-- Member Home -->
+<div id="memberHome">
+<div class="lock-screen active" id="memberLockScreen">
+<i class="fas fa-lock"></i>
+<h2>Website tạm thời khóa</h2>
+<p id="memberLockMessage">🔐 Website tạm thời khóa do chưa có cloud vui lòng truy cập lại vào lúc khác!</p>
+</div>
+<div id="memberActiveContent" class="hidden">
+<h2 class="section-title"><i class="fas fa-home"></i> Chào mừng đến Cloud PC</h2>
+<div class="status-grid">
+<div class="status-card">
+<div class="icon blue"><i class="fas fa-desktop"></i></div>
+<h4>Cloud PC của bạn</h4>
+<div class="value" id="myCloudCount">0</div>
+</div>
+<div class="status-card">
+<div class="icon green"><i class="fas fa-check-circle"></i></div>
+<h4>Trạng thái</h4>
+<div class="value">Online</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Member My Cloud -->
+<div id="memberMyCloud" class="hidden">
+<h2 class="section-title"><i class="fas fa-desktop"></i> Cloud PC của tôi</h2>
+<div class="cloud-list" id="memberCloudList"></div>
+</div>
+
+<!-- Member Support -->
+<div id="memberSupport" class="hidden">
+<h2 class="section-title"><i class="fas fa-headset"></i> Hỗ trợ</h2>
+<div class="setting-group">
+<h3><i class="fas fa-envelope"></i> Liên hệ</h3>
+<div class="setting-row"><span><i class="fas fa-envelope" style="color:#00d4ff;margin-right:8px;"></i> Gmail</span><span style="color:#00d4ff;">herogoodboymc@gmail.com</span></div>
+<div class="setting-row"><span><i class="fas fa-phone" style="color:#00ff88;margin-right:8px;"></i> Hotline</span><span style="color:#00ff88;">038.770.3144</span></div>
+</div>
+<div class="setting-group">
+<h3><i class="fas fa-clock"></i> Giờ làm việc</h3>
+<div class="setting-row"><span>Thứ 2 - Thứ 6</span><span style="color:#888;">08:00 - 22:00</span></div>
+<div class="setting-row"><span>Thứ 7 - Chủ nhật</span><span style="color:#888;">09:00 - 18:00</span></div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- AVATAR CROP MODAL -->
+<div class="modal-overlay avatar-crop-modal" id="avatarCropModal">
+<div class="login-box">
+<h2><i class="fas fa-crop"></i> Cắt ảnh đại diện</h2>
+<div class="avatar-preview-area">
+<div class="crop-container" id="cropContainer" onclick="document.getElementById('avatarFileInput').click()">
+<div id="uploadArea">
+<i class="fas fa-cloud-upload-alt upload-icon"></i>
+<p class="upload-text">Click để chọn ảnh</p>
+<p class="upload-hint">Hỗ trợ JPG, PNG, WEBP</p>
+</div>
+<img id="cropImage" style="display:none;">
+</div>
+<div class="crop-controls" id="cropControls" style="display:none;">
+<div class="crop-slider">
+<i class="fas fa-search-minus"></i>
+<input type="range" id="zoomSlider" min="0.5" max="3" step="0.1" value="1" oninput="updateCropZoom(this.value)">
+<i class="fas fa-search-plus"></i>
+</div>
+<button onclick="rotateCrop(-90)"><i class="fas fa-undo"></i> Xoay trái</button>
+<button onclick="rotateCrop(90)"><i class="fas fa-redo"></i> Xoay phải</button>
+<button onclick="resetCrop()"><i class="fas fa-sync"></i> Reset</button>
+</div>
+</div>
+<div class="avatar-result" id="avatarResult" style="display:none;">
+<p style="color:#888;font-size:0.85rem;">Xem trước:</p>
+<canvas id="cropCanvas" width="150" height="150"></canvas>
+</div>
+<input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarFile(event)">
+<button class="btn" id="saveAvatarBtn" onclick="saveAvatar()" style="display:none;"><i class="fas fa-save"></i> Lưu ảnh đại diện</button>
+<button class="btn btn-close" onclick="closeAvatarCrop()">Hủy</button>
+</div>
+</div>
+
+<!-- ADD CLOUD MODAL -->
+<div class="modal-overlay" id="addCloudModal">
+<div class="login-box" style="max-width:500px;">
+<h2><i class="fas fa-plus-circle"></i> Thêm Cloud PC</h2>
+<div class="add-cloud-form">
+<div class="input-group"><label class="required">Tên Cloud PC</label><input type="text" id="cloudName" placeholder="VD: Cloud-01"></div>
+<div class="input-group"><label class="required">IP Address</label><input type="text" id="cloudIP" placeholder="VD: 192.168.1.100"><p class="error-msg" id="ipError">Vui lòng nhập IP Address!</p></div>
+<div class="input-group"><label class="required">Tài khoản đăng nhập</label><input type="text" id="cloudUser" placeholder="VD: Administrator"><p class="error-msg" id="userError">Vui lòng nhập tài khoản!</p></div>
+<div class="input-group"><label class="required">Mật khẩu</label><input type="password" id="cloudPass" placeholder="Nhập mật khẩu"><p class="error-msg" id="passError">Vui lòng nhập mật khẩu!</p></div>
+<div class="input-group"><label>Cấu hình CPU</label><input type="text" id="cloudCPU" placeholder="VD: Intel Xeon E5-2680"></div>
+<div class="input-group"><label>RAM</label><input type="text" id="cloudRAM" placeholder="VD: 32GB DDR4"></div>
+<button class="btn" onclick="addCloud()"><i class="fas fa-plus"></i> Thêm Cloud PC</button>
+<button class="btn btn-close" onclick="closeAddCloudModal()">Hủy</button>
+</div>
+</div>
+</div>
+
+<!-- CLOUD DETAIL MODAL -->
+<div class="modal-overlay" id="cloudDetailModal">
+<div class="login-box wide">
+<h2 id="cloudDetailTitle"><i class="fas fa-info-circle"></i> Chi tiết Cloud PC</h2>
+<div class="cloud-detail-grid" id="cloudDetailGrid"></div>
+<div style="margin-top:20px;display:flex;gap:10px;justify-content:center;">
+<button class="btn btn-sm btn-success" id="detailStartBtn" onclick=""><i class="fas fa-play"></i> Bật máy</button>
+<button class="btn btn-sm btn-warning" id="detailStopBtn" onclick=""><i class="fas fa-stop"></i> Tắt máy</button>
+<button class="btn btn-sm" id="detailRestartBtn" onclick=""><i class="fas fa-sync"></i> Khởi động lại</button>
+<button class="btn btn-sm btn-close" onclick="closeCloudDetail()">Đóng</button>
+</div>
+</div>
+</div>
+
+<!-- ADD/EDIT USER MODAL -->
+<div class="modal-overlay" id="userModal">
+<div class="login-box" style="max-width:450px;">
+<h2 id="userModalTitle"><i class="fas fa-user-plus"></i> Thêm người dùng</h2>
+<div class="add-cloud-form">
+<div class="input-group"><label class="required">Họ tên</label><input type="text" id="userName" placeholder="Nhập họ tên..."></div>
+<div class="input-group"><label class="required">Email</label><input type="email" id="userEmail" placeholder="email@example.com"></div>
+<div class="input-group"><label>Vai trò</label><select id="userRole"><option value="member">Thành viên</option><option value="admin">Quản trị viên</option></select></div>
+<div class="input-group"><label>Trạng thái</label><select id="userStatus"><option value="online">Online</option><option value="offline">Offline</option></select></div>
+<button class="btn" id="saveUserBtn" onclick="saveUser()"><i class="fas fa-save"></i> Lưu</button>
+<button class="btn btn-close" onclick="closeUserModal()">Hủy</button>
+</div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+<p>Powered by <span class="powered">Greenboymc and HRGBVN</span> <span class="flag">✨🇻🇳</span></p>
+<p style="margin-top:8px;font-size:0.8rem;color:#444;">Dashboard Cloud PC (Beta) - Made with <i class="fas fa-heart" style="color:#ff006e;"></i> by Nguyễn Chí Dự</p>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== LOCAL DATA ====================
+const LOCAL_KEYS = {
+    CLOUDS: 'cloudpc_clouds_v3',
+    USERS: 'cloudpc_users_v3',
+    SETTINGS: 'cloudpc_settings_v3',
+    LOGS: 'cloudpc_logs_v3',
+    AVATARS: 'cloudpc_avatars_v3',
+    BG_COLOR: 'cloudpc_bgcolor_v3',
+    MEMBER_SESSION: 'cloudpc_member_session_v3'
+};
+
+const defaultClouds = [
+    { id: 1, name: 'Cloud-VN-01', ip: '103.1.2.100', user: 'admin', pass: '********', cpu: 'Intel Xeon E5-2680 v4', ram: '32GB DDR4', status: 'online', os: 'Windows Server 2022', cpuUsage: 45, ramUsage: 62, uptime: '3d 12h', power: 'on' },
+    { id: 2, name: 'Cloud-VN-02', ip: '103.1.2.101', user: 'admin', pass: '********', cpu: 'AMD EPYC 7302', ram: '64GB DDR4', status: 'maintenance', os: 'Ubuntu 22.04', cpuUsage: 0, ramUsage: 0, uptime: '0h', power: 'off' }
+];
+
+const defaultUsers = [
+    { id: 1, name: 'Nguyễn Chí Dự', email: 'chidu@hrgbvn.cloud', role: 'admin', status: 'online', password: 'admin123' },
+    { id: 2, name: 'Greenboymc', email: 'green@hrgbvn.cloud', role: 'member', status: 'offline', password: 'member123' }
+];
+
+const defaultSettings = {
+    siteLocked: true,
+    lockMessage: '🔐 Website tạm thời khóa do chưa có cloud vui lòng truy cập lại vào lúc khác!',
+    twoFA: false,
+    loginLog: true,
+    ipLimit: false,
+    particles: true,
+    glassmorphism: true
+};
+
+const bgColors = [
+    { name: 'Tím Xanh (Mặc định)', gradient: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' },
+    { name: 'Xanh Dương', gradient: 'linear-gradient(135deg, #000428 0%, #004e92 100%)' },
+    { name: 'Tím Hồng', gradient: 'linear-gradient(135deg, #1a0a2e 0%, #4a148c 50%, #880e4f 100%)' },
+    { name: 'Xanh Lá', gradient: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)' },
+    { name: 'Cam Đỏ', gradient: 'linear-gradient(135deg, #2c0e0e 0%, #6a1b1b 50%, #b71c1c 100%)' },
+    { name: 'Xám Đen', gradient: 'linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 50%, #16213e 100%)' },
+    { name: 'Xanh Cyan', gradient: 'linear-gradient(135deg, #001219 0%, #005f73 50%, #0a9396 100%)' },
+    { name: 'Vàng Cam', gradient: 'linear-gradient(135deg, #1a1a00 0%, #4a4a00 50%, #8b8000 100%)' },
+    { name: 'Hồng Tím', gradient: 'linear-gradient(135deg, #1a0a1a 0%, #4a154b 50%, #9c27b0 100%)' },
+    { name: 'Xanh Navy', gradient: 'linear-gradient(135deg, #000814 0%, #001d3d 50%, #003566 100%)' }
+];
+
+let currentAvatarRole = '';
+let cropImageObj = null;
+let cropZoom = 1;
+let cropRotation = 0;
+let editingUserId = null;
+let currentMember = null;
+let selectedCloudId = null;
+
+// Initialize
+function initLocalData() {
+    if (!localStorage.getItem(LOCAL_KEYS.CLOUDS)) localStorage.setItem(LOCAL_KEYS.CLOUDS, JSON.stringify(defaultClouds));
+    if (!localStorage.getItem(LOCAL_KEYS.USERS)) localStorage.setItem(LOCAL_KEYS.USERS, JSON.stringify(defaultUsers));
+    if (!localStorage.getItem(LOCAL_KEYS.SETTINGS)) localStorage.setItem(LOCAL_KEYS.SETTINGS, JSON.stringify(defaultSettings));
+    if (!localStorage.getItem(LOCAL_KEYS.LOGS)) localStorage.setItem(LOCAL_KEYS.LOGS, JSON.stringify([{ time: new Date().toLocaleString('vi-VN'), action: 'Hệ thống khởi động', type: 'info' }]));
+    if (!localStorage.getItem(LOCAL_KEYS.AVATARS)) localStorage.setItem(LOCAL_KEYS.AVATARS, JSON.stringify({}));
+}
+
+function getClouds() { return JSON.parse(localStorage.getItem(LOCAL_KEYS.CLOUDS) || '[]'); }
+function getUsers() { return JSON.parse(localStorage.getItem(LOCAL_KEYS.USERS) || '[]'); }
+function getSettings() { return JSON.parse(localStorage.getItem(LOCAL_KEYS.SETTINGS) || '{}'); }
+function getLogs() { return JSON.parse(localStorage.getItem(LOCAL_KEYS.LOGS) || '[]'); }
+function getAvatars() { return JSON.parse(localStorage.getItem(LOCAL_KEYS.AVATARS) || '{}'); }
+function getMemberSession() { return JSON.parse(localStorage.getItem(LOCAL_KEYS.MEMBER_SESSION) || 'null'); }
+
+function setClouds(data) {
+    localStorage.setItem(LOCAL_KEYS.CLOUDS, JSON.stringify(data));
+    updateAdminStats();
+    renderCloudList();
+    renderCloudManageList();
+    renderMemberCloudList();
+    addLog('Cập nhật danh sách Cloud PC', 'update');
+}
+function setUsers(data) {
+    localStorage.setItem(LOCAL_KEYS.USERS, JSON.stringify(data));
+    renderUserList();
+}
+function setSettings(data) {
+    localStorage.setItem(LOCAL_KEYS.SETTINGS, JSON.stringify(data));
+    applySettings(data);
+}
+function setLogs(data) { localStorage.setItem(LOCAL_KEYS.LOGS, JSON.stringify(data)); }
+function setAvatars(data) { localStorage.setItem(LOCAL_KEYS.AVATARS, JSON.stringify(data)); }
+function setMemberSession(data) { localStorage.setItem(LOCAL_KEYS.MEMBER_SESSION, JSON.stringify(data)); }
+
+function addLog(action, type) {
+    const logs = getLogs();
+    logs.unshift({ time: new Date().toLocaleString('vi-VN'), action, type });
+    if (logs.length > 50) logs.pop();
+    setLogs(logs);
+    renderLogs();
+}
+
+// ==================== UI ====================
+function showToast(msg, isError) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast' + (isError ? ' error' : '');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function createParticles() {
+    const container = document.getElementById('particles');
+    container.innerHTML = '';
+    for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDelay = Math.random() * 15 + 's';
+        p.style.animationDuration = (10 + Math.random() * 10) + 's';
+        container.appendChild(p);
+    }
+}
+
+// ==================== ADMIN AUTH ====================
+function showLogin() { document.getElementById('loginModal').classList.add('active'); }
+function closeLogin() {
+    document.getElementById('loginModal').classList.remove('active');
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+}
+
+function login() {
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    if (u === 'HRGBVN' && p === 'Chidu2009@') {
+        closeLogin();
+        document.getElementById('roleSelection').style.display = 'none';
+        document.getElementById('adminDashboard').classList.add('active');
+        showToast('Đăng nhập thành công! Chào Admin ✨');
+        addLog('Admin đăng nhập', 'success');
+        updateAdminStats();
+        renderCloudList();
+        renderCloudManageList();
+        renderUserList();
+        renderLogs();
+        renderBgColors();
+        applySettings(getSettings());
+        loadAvatars();
+    } else {
+        showToast('Sai tài khoản hoặc mật khẩu!', true);
+    }
+}
+
+function logout() {
+    document.getElementById('adminDashboard').classList.remove('active');
+    document.getElementById('memberDashboard').classList.remove('active');
+    document.getElementById('roleSelection').style.display = 'flex';
+    showToast('Đã đăng xuất!');
+    addLog('Đăng xuất', 'info');
+}
+
+// ==================== MEMBER AUTH ====================
+function showMemberAuth() { document.getElementById('memberAuthModal').classList.add('active'); }
+function closeMemberAuth() {
+    document.getElementById('memberAuthModal').classList.remove('active');
+    document.getElementById('memberLoginEmail').value = '';
+    document.getElementById('memberLoginPass').value = '';
+    document.getElementById('memberRegName').value = '';
+    document.getElementById('memberRegEmail').value = '';
+    document.getElementById('memberRegPass').value = '';
+    document.getElementById('memberRegPass2').value = '';
+}
+
+function switchAuthTab(tab) {
+    document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+    document.getElementById('memberLoginForm').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('memberRegisterForm').classList.toggle('hidden', tab !== 'register');
+}
+
+function memberLogin() {
+    const email = document.getElementById('memberLoginEmail').value.trim();
+    const pass = document.getElementById('memberLoginPass').value;
+    if (!email || !pass) { showToast('Vui lòng điền đầy đủ thông tin!', true); return; }
+    const users = getUsers();
+    const user = users.find(u => u.email === email && u.password === pass);
+    if (!user) { showToast('Email hoặc mật khẩu không đúng!', true); return; }
+    currentMember = user;
+    setMemberSession(user);
+    closeMemberAuth();
+    document.getElementById('roleSelection').style.display = 'none';
+    document.getElementById('memberDashboard').classList.add('active');
+    document.getElementById('memberDisplayName').textContent = user.name;
+    document.getElementById('memberDisplayEmail').textContent = user.email;
+    showToast('Chào mừng ' + user.name + '! ✨');
+    addLog('Member ' + user.name + ' đăng nhập', 'success');
+    applySettings(getSettings());
+    renderMemberCloudList();
+    loadAvatars();
+}
+
+function memberRegister() {
+    const name = document.getElementById('memberRegName').value.trim();
+    const email = document.getElementById('memberRegEmail').value.trim();
+    const pass = document.getElementById('memberRegPass').value;
+    const pass2 = document.getElementById('memberRegPass2').value;
+    if (!name || !email || !pass) { showToast('Vui lòng điền đầy đủ thông tin!', true); return; }
+    if (pass.length < 6) { showToast('Mật khẩu tối thiểu 6 ký tự!', true); return; }
+    if (pass !== pass2) { showToast('Mật khẩu xác nhận không khớp!', true); return; }
+    const users = getUsers();
+    if (users.find(u => u.email === email)) { showToast('Email đã được sử dụng!', true); return; }
+    const newUser = { id: Date.now(), name, email, role: 'member', status: 'online', password: pass };
+    users.push(newUser);
+    setUsers(users);
+    showToast('Đăng ký thành công! Vui lòng đăng nhập.');
+    addLog('Người dùng mới đăng ký: ' + name, 'success');
+    switchAuthTab('login');
+}
+
+function memberLogout() {
+    currentMember = null;
+    setMemberSession(null);
+    document.getElementById('memberDashboard').classList.remove('active');
+    document.getElementById('roleSelection').style.display = 'flex';
+    showToast('Đã đăng xuất!');
+    addLog('Member đăng xuất', 'info');
+}
+
+// ==================== SECTIONS ====================
+function showAdminSection(section) {
+    document.querySelectorAll('#adminDashboard .nav-menu a').forEach(a => a.classList.remove('active'));
+    event.target.classList.add('active');
+    ['adminOverview','adminClouds','adminCloudManage','adminSettings','adminUsers','adminAppearance','adminLogs'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById('admin' + section.charAt(0).toUpperCase() + section.slice(1)).classList.remove('hidden');
+    if (section === 'cloudManage') renderCloudManageList();
+}
+
+function showMemberSection(section) {
+    document.querySelectorAll('#memberDashboard .nav-menu a').forEach(a => a.classList.remove('active'));
+    event.target.classList.add('active');
+    ['memberHome','memberMyCloud','memberSupport'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById('member' + section.charAt(0).toUpperCase() + section.slice(1)).classList.remove('hidden');
+}
+
+// ==================== AVATAR ====================
+function loadAvatars() {
+    const avatars = getAvatars();
+    if (avatars.admin) {
+        const img = document.getElementById('adminAvatar');
+        img.src = avatars.admin;
+        img.style.display = 'block';
+        document.getElementById('adminAvatarPlaceholder').style.display = 'none';
+    }
+    if (avatars.member) {
+        const img = document.getElementById('memberAvatar');
+        img.src = avatars.member;
+        img.style.display = 'block';
+        document.getElementById('memberAvatarPlaceholder').style.display = 'none';
+    }
+}
+
+function openAvatarCrop(role) {
+    currentAvatarRole = role;
+    document.getElementById('avatarCropModal').classList.add('active');
+    resetCropState();
+}
+
+function closeAvatarCrop() {
+    document.getElementById('avatarCropModal').classList.remove('active');
+    resetCropState();
+}
+
+function resetCropState() {
+    cropImageObj = null;
+    cropZoom = 1;
+    cropRotation = 0;
+    document.getElementById('cropImage').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'flex';
+    document.getElementById('cropControls').style.display = 'none';
+    document.getElementById('avatarResult').style.display = 'none';
+    document.getElementById('saveAvatarBtn').style.display = 'none';
+    document.getElementById('cropContainer').classList.remove('has-image');
+    document.getElementById('zoomSlider').value = 1;
+}
+
+function handleAvatarFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { showToast('Vui lòng chọn file ảnh!', true); return; }
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        cropImageObj = new Image();
+        cropImageObj.onload = function() {
+            document.getElementById('uploadArea').style.display = 'none';
+            const img = document.getElementById('cropImage');
+            img.src = event.target.result;
+            img.style.display = 'block';
+            document.getElementById('cropContainer').classList.add('has-image');
+            document.getElementById('cropControls').style.display = 'flex';
+            document.getElementById('avatarResult').style.display = 'flex';
+            document.getElementById('saveAvatarBtn').style.display = 'block';
+            updateCropPreview();
+        };
+        cropImageObj.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function updateCropZoom(val) {
+    cropZoom = parseFloat(val);
+    updateCropPreview();
+}
+
+function rotateCrop(deg) {
+    cropRotation = (cropRotation + deg) % 360;
+    updateCropPreview();
+}
+
+function resetCrop() {
+    cropZoom = 1;
+    cropRotation = 0;
+    document.getElementById('zoomSlider').value = 1;
+    updateCropPreview();
+}
+
+function updateCropPreview() {
+    if (!cropImageObj) return;
+    const canvas = document.getElementById('cropCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = 150;
+    canvas.width = size;
+    canvas.height = size;
+    ctx.clearRect(0, 0, size, size);
+    ctx.save();
+    ctx.translate(size / 2, size / 2);
+    ctx.rotate(cropRotation * Math.PI / 180);
+    ctx.scale(cropZoom, cropZoom);
+    const minDim = Math.min(cropImageObj.width, cropImageObj.height);
+    const sx = (cropImageObj.width - minDim) / 2;
+    const sy = (cropImageObj.height - minDim) / 2;
+    ctx.drawImage(cropImageObj, sx, sy, minDim, minDim, -size / 2 / cropZoom, -size / 2 / cropZoom, size / cropZoom, size / cropZoom);
+    ctx.restore();
+}
+
+function saveAvatar() {
+    const canvas = document.getElementById('cropCanvas');
+    const dataUrl = canvas.toDataURL('image/png');
+    const avatars = getAvatars();
+    avatars[currentAvatarRole] = dataUrl;
+    setAvatars(avatars);
+    loadAvatars();
+    closeAvatarCrop();
+    showToast('Lưu ảnh đại diện thành công! ✨');
+    addLog('Cập nhật ảnh đại diện ' + currentAvatarRole, 'update');
+}
+
+// ==================== CLOUD MANAGEMENT ====================
+function showAddCloudModal() { document.getElementById('addCloudModal').classList.add('active'); }
+function closeAddCloudModal() {
+    document.getElementById('addCloudModal').classList.remove('active');
+    document.querySelectorAll('#addCloudModal input').forEach(i => { i.value = ''; i.classList.remove('error'); });
+    document.querySelectorAll('#addCloudModal .error-msg').forEach(e => e.classList.remove('show'));
+}
+
+function addCloud() {
+    const name = document.getElementById('cloudName').value.trim();
+    const ip = document.getElementById('cloudIP').value.trim();
+    const user = document.getElementById('cloudUser').value.trim();
+    const pass = document.getElementById('cloudPass').value;
+    const cpu = document.getElementById('cloudCPU').value.trim();
+    const ram = document.getElementById('cloudRAM').value.trim();
+
+    let hasError = false;
+    document.querySelectorAll('#addCloudModal .error-msg').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('#addCloudModal input').forEach(i => i.classList.remove('error'));
+
+    if (!ip) { document.getElementById('ipError').classList.add('show'); document.getElementById('cloudIP').classList.add('error'); hasError = true; }
+    if (!user) { document.getElementById('userError').classList.add('show'); document.getElementById('cloudUser').classList.add('error'); hasError = true; }
+    if (!pass) { document.getElementById('passError').classList.add('show'); document.getElementById('cloudPass').classList.add('error'); hasError = true; }
+
+    if (hasError) { showToast('Vui lòng điền đầy đủ thông tin bắt buộc!', true); return; }
+
+    const clouds = getClouds();
+    clouds.push({
+        id: Date.now(),
+        name: name || 'Cloud-' + (clouds.length + 1),
+        ip, user, pass,
+        cpu: cpu || 'N/A',
+        ram: ram || 'N/A',
+        status: 'online',
+        os: 'Windows Server',
+        cpuUsage: 0,
+        ramUsage: 0,
+        uptime: '0h',
+        power: 'on'
+    });
+    setClouds(clouds);
+    closeAddCloudModal();
+    showToast('Thêm Cloud PC thành công! ✨');
+    addLog('Thêm Cloud PC: ' + ip, 'success');
+}
+
+function deleteCloud(id) {
+    if (!confirm('Bạn có chắc muốn xóa Cloud PC này?')) return;
+    const clouds = getClouds().filter(c => c.id !== id);
+    setClouds(clouds);
+    showToast('Đã xóa Cloud PC!');
+    addLog('Xóa Cloud PC #' + id, 'update');
+}
+
+function connectCloud(ip) {
+    showToast('Đang kết nối tới ' + ip + '...');
+    setTimeout(() => showToast('Kết nối thành công! (Demo)'), 1500);
+}
+
+// ==================== CLOUD POWER MANAGEMENT ====================
+function startCloud(id) {
+    const clouds = getClouds();
+    const idx = clouds.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    if (clouds[idx].power === 'on') { showToast('Máy đang chạy rồi!', true); return; }
+    clouds[idx].power = 'on';
+    clouds[idx].status = 'online';
+    clouds[idx].cpuUsage = Math.floor(Math.random() * 60) + 10;
+    clouds[idx].ramUsage = Math.floor(Math.random() * 70) + 20;
+    clouds[idx].uptime = '0h 1m';
+    setClouds(clouds);
+    showToast('Đã bật Cloud PC ' + clouds[idx].name + '!');
+    addLog('Bật máy: ' + clouds[idx].name, 'success');
+}
+
+function stopCloud(id) {
+    const clouds = getClouds();
+    const idx = clouds.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    if (clouds[idx].power === 'off') { showToast('Máy đã tắt rồi!', true); return; }
+    clouds[idx].power = 'off';
+    clouds[idx].status = 'offline';
+    clouds[idx].cpuUsage = 0;
+    clouds[idx].ramUsage = 0;
+    clouds[idx].uptime = '0h';
+    setClouds(clouds);
+    showToast('Đã tắt Cloud PC ' + clouds[idx].name + '!');
+    addLog('Tắt máy: ' + clouds[idx].name, 'update');
+}
+
+function restartCloud(id) {
+    const clouds = getClouds();
+    const idx = clouds.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    showToast('Đang khởi động lại ' + clouds[idx].name + '...');
+    clouds[idx].power = 'off';
+    clouds[idx].status = 'maintenance';
+    setClouds(clouds);
+    setTimeout(() => {
+        const clouds2 = getClouds();
+        const idx2 = clouds2.findIndex(c => c.id === id);
+        if (idx2 !== -1) {
+            clouds2[idx2].power = 'on';
+            clouds2[idx2].status = 'online';
+            clouds2[idx2].cpuUsage = Math.floor(Math.random() * 50) + 10;
+            clouds2[idx2].ramUsage = Math.floor(Math.random() * 60) + 15;
+            clouds2[idx2].uptime = '0h 0m';
+            setClouds(clouds2);
+            showToast('Khởi động lại thành công!');
+            addLog('Restart máy: ' + clouds2[idx2].name, 'update');
+        }
+    }, 2000);
+}
+
+function startAllClouds() {
+    const clouds = getClouds();
+    let count = 0;
+    clouds.forEach(c => {
+        if (c.power === 'off') {
+            c.power = 'on';
+            c.status = 'online';
+            c.cpuUsage = Math.floor(Math.random() * 60) + 10;
+            c.ramUsage = Math.floor(Math.random() * 70) + 20;
+            c.uptime = '0h 1m';
+            count++;
+        }
+    });
+    if (count === 0) { showToast('Tất cả máy đã đang chạy!', true); return; }
+    setClouds(clouds);
+    showToast('Đã bật ' + count + ' máy Cloud PC!');
+    addLog('Bật tất cả máy (' + count + ')', 'success');
+}
+
+function stopAllClouds() {
+    const clouds = getClouds();
+    let count = 0;
+    clouds.forEach(c => {
+        if (c.power === 'on') {
+            c.power = 'off';
+            c.status = 'offline';
+            c.cpuUsage = 0;
+            c.ramUsage = 0;
+            c.uptime = '0h';
+            count++;
+        }
+    });
+    if (count === 0) { showToast('Tất cả máy đã tắt!', true); return; }
+    setClouds(clouds);
+    showToast('Đã tắt ' + count + ' máy Cloud PC!');
+    addLog('Tắt tất cả máy (' + count + ')', 'update');
+}
+
+function showCloudDetail(id) {
+    const clouds = getClouds();
+    const c = clouds.find(x => x.id === id);
+    if (!c) return;
+    selectedCloudId = id;
+    document.getElementById('cloudDetailTitle').innerHTML = '<i class="fas fa-info-circle"></i> Chi tiết: ' + c.name;
+    document.getElementById('cloudDetailGrid').innerHTML = `
+        <div class="cloud-detail-item"><label>Tên máy</label><span>${c.name}</span></div>
+        <div class="cloud-detail-item"><label>IP Address</label><span>${c.ip} <button class="copy-btn" onclick="copyText('${c.ip}')"><i class="fas fa-copy"></i></button></span></div>
+        <div class="cloud-detail-item"><label>Tài khoản</label><span>${c.user} <button class="copy-btn" onclick="copyText('${c.user}')"><i class="fas fa-copy"></i></button></span></div>
+        <div class="cloud-detail-item"><label>Mật khẩu</label><span>•••••••• <button class="copy-btn" onclick="copyText('${c.pass}')"><i class="fas fa-copy"></i></button></span></div>
+        <div class="cloud-detail-item"><label>CPU</label><span>${c.cpu}</span></div>
+        <div class="cloud-detail-item"><label>RAM</label><span>${c.ram}</span></div>
+        <div class="cloud-detail-item"><label>Hệ điều hành</label><span>${c.os}</span></div>
+        <div class="cloud-detail-item"><label>Trạng thái nguồn</label><span style="color:${c.power==='on'?'#00ff88':'#ff006e'}">${c.power==='on'?'Đang chạy':'Đã tắt'}</span></div>
+        <div class="cloud-detail-item"><label>CPU Usage</label><span>${c.cpuUsage}%<div class="progress-bar"><div class="fill ${c.cpuUsage>80?'red':c.cpuUsage>50?'orange':'green'}" style="width:${c.cpuUsage}%"></div></div></span></div>
+        <div class="cloud-detail-item"><label>RAM Usage</label><span>${c.ramUsage}%<div class="progress-bar"><div class="fill ${c.ramUsage>80?'red':c.ramUsage>50?'orange':'green'}" style="width:${c.ramUsage}%"></div></div></span></div>
+        <div class="cloud-detail-item"><label>Uptime</label><span>${c.uptime}</span></div>
+        <div class="cloud-detail-item"><label>Trạng thái</label><span class="status ${c.status}">${c.status==='online'?'Online':c.status==='maintenance'?'Bảo trì':'Offline'}</span></div>
+    `;
+    document.getElementById('detailStartBtn').onclick = function() { closeCloudDetail(); startCloud(id); };
+    document.getElementById('detailStopBtn').onclick = function() { closeCloudDetail(); stopCloud(id); };
+    document.getElementById('detailRestartBtn').onclick = function() { closeCloudDetail(); restartCloud(id); };
+    document.getElementById('cloudDetailModal').classList.add('active');
+}
+
+function closeCloudDetail() {
+    document.getElementById('cloudDetailModal').classList.remove('active');
+    selectedCloudId = null;
+}
+
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => showToast('Đã sao chép!'));
+}
+
+// ==================== USER MANAGEMENT ====================
+function showAddUserModal() {
+    editingUserId = null;
+    document.getElementById('userModalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Thêm người dùng';
+    document.getElementById('userName').value = '';
+    document.getElementById('userEmail').value = '';
+    document.getElementById('userRole').value = 'member';
+    document.getElementById('userStatus').value = 'online';
+    document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save"></i> Lưu';
+    document.getElementById('userModal').classList.add('active');
+}
+
+function showEditUserModal(id) {
+    const users = getUsers();
+    const user = users.find(u => u.id === id);
+    if (!user) return;
+    editingUserId = id;
+    document.getElementById('userModalTitle').innerHTML = '<i class="fas fa-user-edit"></i> Sửa người dùng';
+    document.getElementById('userName').value = user.name;
+    document.getElementById('userEmail').value = user.email;
+    document.getElementById('userRole').value = user.role;
+    document.getElementById('userStatus').value = user.status;
+    document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save"></i> Cập nhật';
+    document.getElementById('userModal').classList.add('active');
+}
+
+function closeUserModal() {
+    document.getElementById('userModal').classList.remove('active');
+    editingUserId = null;
+}
+
+function saveUser() {
+    const name = document.getElementById('userName').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const role = document.getElementById('userRole').value;
+    const status = document.getElementById('userStatus').value;
+    if (!name || !email) { showToast('Vui lòng điền đầy đủ thông tin!', true); return; }
+    const users = getUsers();
+    if (editingUserId) {
+        const idx = users.findIndex(u => u.id === editingUserId);
+        if (idx !== -1) {
+            users[idx] = { ...users[idx], name, email, role, status };
+            showToast('Cập nhật người dùng thành công!');
+            addLog('Cập nhật người dùng: ' + name, 'update');
+        }
+    } else {
+        if (users.find(u => u.email === email)) { showToast('Email đã tồn tại!', true); return; }
+        users.push({ id: Date.now(), name, email, role, status, password: 'member123' });
+        showToast('Thêm người dùng thành công!');
+        addLog('Thêm người dùng: ' + name, 'success');
+    }
+    setUsers(users);
+    closeUserModal();
+}
+
+function deleteUser(id) {
+    if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return;
+    const users = getUsers().filter(u => u.id !== id);
+    setUsers(users);
+    showToast('Đã xóa người dùng!');
+    addLog('Xóa người dùng #' + id, 'update');
+}
+
+// ==================== STATS & RENDER ====================
+function updateAdminStats() {
+    const clouds = getClouds();
+    const users = getUsers();
+    const settings = getSettings();
+    document.getElementById('totalClouds').textContent = clouds.length;
+    document.getElementById('runningClouds').textContent = clouds.filter(c => c.power === 'on').length;
+    document.getElementById('stoppedClouds').textContent = clouds.filter(c => c.power === 'off').length;
+    document.getElementById('totalUsers').textContent = users.length;
+    document.getElementById('siteStatus').textContent = settings.siteLocked ? 'Khóa' : 'Mở';
+    document.getElementById('siteStatus').style.color = settings.siteLocked ? '#ff006e' : '#00ff88';
+    const avgCpu = clouds.length > 0 ? Math.round(clouds.reduce((s, c) => s + (c.cpuUsage || 0), 0) / clouds.length) : 0;
+    document.getElementById('avgCpu').textContent = avgCpu + '%';
+}
+
+function renderCloudList() {
+    const clouds = getClouds();
+    const container = document.getElementById('cloudList');
+    if (clouds.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;"><i class="fas fa-inbox" style="font-size:3rem;margin-bottom:15px;display:block;"></i>Chưa có Cloud PC nào</div>';
+        return;
+    }
+    container.innerHTML = clouds.map(c => `
+        <div class="cloud-item">
+            <div class="info">
+                <i class="fas fa-desktop"></i>
+                <div>
+                    <h4>${c.name} <span style="font-size:0.75rem;color:#888;margin-left:8px;">(${c.ip})</span></h4>
+                    <span>${c.cpu} | ${c.ram} | ${c.os} | CPU: ${c.cpuUsage || 0}% | RAM: ${c.ramUsage || 0}%</span>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <span class="status ${c.status}">${c.status === 'online' ? 'Online' : c.status === 'maintenance' ? 'Bảo trì' : 'Offline'}</span>
+                <span style="font-size:0.7rem;color:${c.power==='on'?'#00ff88':'#888'};padding:3px 8px;border-radius:4px;background:rgba(255,255,255,0.05);">${c.power==='on'?'⚡ ON':'⭕ OFF'}</span>
+                <button onclick="deleteCloud(${c.id})" style="background:rgba(255,0,110,0.2);border:none;color:#ff006e;padding:6px 12px;border-radius:8px;cursor:pointer;"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCloudManageList() {
+    const clouds = getClouds();
+    const container = document.getElementById('cloudManageList');
+    if (clouds.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;"><i class="fas fa-inbox" style="font-size:3rem;margin-bottom:15px;display:block;"></i>Chưa có Cloud PC nào để quản lý</div>';
+        return;
+    }
+    container.innerHTML = clouds.map(c => `
+        <div class="cloud-item">
+            <div class="info">
+                <i class="fas fa-desktop" style="color:${c.power==='on'?'#00ff88':'#888'}"></i>
+                <div style="flex:1;">
+                    <h4>${c.name}</h4>
+                    <span>IP: ${c.ip} | ${c.cpu} | ${c.ram}</span>
+                    <div style="margin-top:6px;">
+                        <span style="font-size:0.75rem;color:#888;">CPU: ${c.cpuUsage || 0}%</span>
+                        <div class="progress-bar" style="width:120px;display:inline-block;vertical-align:middle;margin-left:8px;">
+                            <div class="fill ${(c.cpuUsage||0)>80?'red':(c.cpuUsage||0)>50?'orange':'green'}" style="width:${c.cpuUsage || 0}%"></div>
+                        </div>
+                        <span style="font-size:0.75rem;color:#888;margin-left:12px;">RAM: ${c.ramUsage || 0}%</span>
+                        <div class="progress-bar" style="width:120px;display:inline-block;vertical-align:middle;margin-left:8px;">
+                            <div class="fill ${(c.ramUsage||0)>80?'red':(c.ramUsage||0)>50?'orange':'green'}" style="width:${c.ramUsage || 0}%"></div>
+                        </div>
+                        <span style="font-size:0.75rem;color:#888;margin-left:12px;">Uptime: ${c.uptime}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cloud-actions">
+                ${c.power === 'off' ? `<button class="btn-start" onclick="startCloud(${c.id})"><i class="fas fa-play"></i> Bật</button>` : ''}
+                ${c.power === 'on' ? `<button class="btn-stop" onclick="stopCloud(${c.id})"><i class="fas fa-stop"></i> Tắt</button>` : ''}
+                <button class="btn-restart" onclick="restartCloud(${c.id})"><i class="fas fa-sync"></i> Restart</button>
+                <button class="btn-info" onclick="showCloudDetail(${c.id})"><i class="fas fa-eye"></i> Chi tiết</button>
+                <button class="btn-delete" onclick="deleteCloud(${c.id})"><i class="fas fa-trash"></i> Xóa</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderMemberCloudList() {
+    const clouds = getClouds().filter(c => c.power === 'on');
+    const container = document.getElementById('memberCloudList');
+    document.getElementById('myCloudCount').textContent = clouds.length;
+    if (clouds.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;"><i class="fas fa-inbox" style="font-size:3rem;margin-bottom:15px;display:block;"></i>Chưa có Cloud PC khả dụng</div>';
+        return;
+    }
+    container.innerHTML = clouds.map(c => `
+        <div class="cloud-item">
+            <div class="info">
+                <i class="fas fa-desktop"></i>
+                <div>
+                    <h4>${c.name}</h4>
+                    <span>${c.cpu} | ${c.ram} | ${c.os}</span>
+                </div>
+            </div>
+            <button class="btn btn-sm" onclick="connectCloud('${c.ip}')"><i class="fas fa-plug"></i> Kết nối</button>
+        </div>
+    `).join('');
+}
+
+function renderUserList() {
+    const users = getUsers();
+    const container = document.getElementById('userList');
+    container.innerHTML = users.map(u => `
+        <div class="cloud-item">
+            <div class="info">
+                <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#7b2cbf);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas fa-user" style="font-size:1rem;"></i>
+                </div>
+                <div>
+                    <h4>${u.name}</h4>
+                    <span>${u.email} | ${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</span>
+                </div>
+            </div>
+            <div class="user-actions">
+                <span class="status ${u.status}">${u.status === 'online' ? 'Online' : 'Offline'}</span>
+                <button class="btn-edit" onclick="showEditUserModal(${u.id})"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderLogs() {
+    const logs = getLogs();
+    const container = document.getElementById('logsContainer');
+    const icons = { info: 'fa-info-circle', success: 'fa-check-circle', update: 'fa-sync', error: 'fa-exclamation-circle' };
+    const colors = { info: '#00d4ff', success: '#00ff88', update: '#ffaa00', error: '#ff006e' };
+    container.innerHTML = logs.map(l => `
+        <div class="setting-row">
+            <span><i class="fas ${icons[l.type] || icons.info}" style="color:${colors[l.type] || colors.info};margin-right:8px;"></i> ${l.action}</span>
+            <span style="color:#888;font-size:0.8rem;">${l.time}</span>
+        </div>
+    `).join('');
+}
+
+// ==================== APPEARANCE ====================
+function renderBgColors() {
+    const grid = document.getElementById('bgColorGrid');
+    const saved = localStorage.getItem(LOCAL_KEYS.BG_COLOR);
+    grid.innerHTML = bgColors.map((c, i) => `
+        <div class="color-option ${saved === c.gradient ? 'selected' : ''}" 
+            style="background:${c.gradient}" 
+            onclick="selectBgColor(${i}, this)" 
+            title="${c.name}">
+        </div>
+    `).join('');
+    if (saved) {
+        const preview = document.getElementById('bgPreview');
+        preview.style.background = saved;
+        preview.textContent = 'Đang áp dụng';
+        preview.style.color = '#fff';
+    }
+}
+
+function selectBgColor(index, el) {
+    document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    const preview = document.getElementById('bgPreview');
+    preview.style.background = bgColors[index].gradient;
+    preview.textContent = bgColors[index].name;
+    preview.style.color = '#fff';
+}
+
+function applyBackground() {
+    const selected = document.querySelector('.color-option.selected');
+    if (!selected) { showToast('Vui lòng chọn màu nền!', true); return; }
+    const gradient = selected.style.background;
+    document.body.style.setProperty('--bg-gradient', gradient);
+    document.body.style.background = gradient;
+    localStorage.setItem(LOCAL_KEYS.BG_COLOR, gradient);
+    showToast('Áp dụng màu nền thành công! ✨');
+    addLog('Thay đổi màu nền dashboard', 'update');
+}
+
+function toggleParticles() {
+    const settings = getSettings();
+    settings.particles = !settings.particles;
+    setSettings(settings);
+    document.getElementById('particlesToggle').classList.toggle('active');
+    document.getElementById('particles').style.display = settings.particles ? 'block' : 'none';
+    showToast(settings.particles ? 'Bật particles!' : 'Tắt particles!');
+}
+
+function toggleGlassmorphism() {
+    const settings = getSettings();
+    settings.glassmorphism = !settings.glassmorphism;
+    setSettings(settings);
+    document.getElementById('glassToggle').classList.toggle('active');
+    const els = document.querySelectorAll('.sidebar, .main-content, .role-card, .login-box, .status-card, .cloud-item, .setting-group');
+    els.forEach(el => {
+        el.style.backdropFilter = settings.glassmorphism ? 'blur(10px)' : 'none';
+    });
+    showToast(settings.glassmorphism ? 'Bật glassmorphism!' : 'Tắt glassmorphism!');
+}
+
+// ==================== SETTINGS ====================
+function toggleSiteLock() {
+    const settings = getSettings();
+    settings.siteLocked = !settings.siteLocked;
+    setSettings(settings);
+    document.getElementById('siteLockToggle').classList.toggle('active');
+    showToast(settings.siteLocked ? 'Website đã khóa!' : 'Website đã mở!');
+    addLog(settings.siteLocked ? 'Khóa website' : 'Mở website', 'update');
+}
+
+function updateLockMessage(msg) {
+    const settings = getSettings();
+    settings.lockMessage = msg;
+    setSettings(settings);
+    showToast('Cập nhật thông báo thành công!');
+}
+
+function applySettings(settings) {
+    if (settings.siteLocked) {
+        document.getElementById('siteLockToggle').classList.add('active');
+    } else {
+        document.getElementById('siteLockToggle').classList.remove('active');
+    }
+    document.getElementById('lockMessage').value = settings.lockMessage;
+
+    const lockScreen = document.getElementById('memberLockScreen');
+    const activeContent = document.getElementById('memberActiveContent');
+    const memberMsg = document.getElementById('memberLockMessage');
+
+    if (memberMsg) memberMsg.textContent = settings.lockMessage;
+    if (settings.siteLocked) {
+        if (lockScreen) lockScreen.classList.add('active');
+        if (activeContent) activeContent.classList.add('hidden');
+    } else {
+        if (lockScreen) lockScreen.classList.remove('active');
+        if (activeContent) activeContent.classList.remove('hidden');
+    }
+
+    if (settings.particles) {
+        document.getElementById('particlesToggle').classList.add('active');
+        document.getElementById('particles').style.display = 'block';
+    } else {
+        document.getElementById('particlesToggle').classList.remove('active');
+        document.getElementById('particles').style.display = 'none';
+    }
+
+    updateAdminStats();
+}
+
+// ==================== INIT ====================
+window.onload = function() {
+    initLocalData();
+    createParticles();
+
+    const savedBg = localStorage.getItem(LOCAL_KEYS.BG_COLOR);
+    if (savedBg) {
+        document.body.style.setProperty('--bg-gradient', savedBg);
+        document.body.style.background = savedBg;
+    }
+
+    const session = getMemberSession();
+    if (session) {
+        currentMember = session;
+        document.getElementById('roleSelection').style.display = 'none';
+        document.getElementById('memberDashboard').classList.add('active');
+        document.getElementById('memberDisplayName').textContent = session.name;
+        document.getElementById('memberDisplayEmail').textContent = session.email;
+        applySettings(getSettings());
+        renderMemberCloudList();
+        loadAvatars();
+    }
+
+    applySettings(getSettings());
+};
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        if (document.getElementById('loginModal').classList.contains('active')) login();
+    }
+});
+</script>
+</body>
+</html>
